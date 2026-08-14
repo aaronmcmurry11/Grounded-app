@@ -189,7 +189,7 @@ struct HelpSupportView: View {
                 .sectionEyebrow()
 
             VStack(alignment: .leading, spacing: 14) {
-                Text("Grounded reserves a banner above the chat for urgent-care warnings. Nothing triggers it: red-flag detection has to be its own deterministic layer, not a judgement call from the model that writes the reply, and that layer isn't built.")
+                Text("Grounded reserves a banner above the chat for urgent-care warnings. A deterministic keyword layer — not the chat model itself — checks every message and can trigger it automatically now. It's a first pass, still being tuned, and hasn't had a clinical safety review yet.")
                     .bodyText(15)
                     .foregroundStyle(Theme.cream.opacity(0.84))
                     .fixedSize(horizontal: false, vertical: true)
@@ -204,7 +204,7 @@ struct HelpSupportView: View {
                         Text("Preview the safety banner")
                             .uiLabel(15)
                             .foregroundStyle(Theme.cream)
-                        Text("Shows the reserved banner in Chat. It resets when you close the app.")
+                        Text("Shows the banner in Chat without a real trigger. It resets when you close the app.")
                             .captionText(12)
                             .fixedSize(horizontal: false, vertical: true)
                     }
