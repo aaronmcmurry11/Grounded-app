@@ -25,9 +25,9 @@ struct ChatView: View {
         VStack(spacing: 0) {
             ChatHeader(unreadUpdates: unreadUpdates) { isShowingUpdates = true }
 
-            SafetyBanner(isActive: appModel.isSafetyBannerPreviewActive)
+            SafetyBanner(result: activeSafetyBanner)
                 .padding(.horizontal, 18)
-                .padding(.bottom, appModel.isSafetyBannerPreviewActive ? 12 : 0)
+                .padding(.bottom, activeSafetyBanner != nil ? 12 : 0)
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -76,6 +76,12 @@ struct ChatView: View {
 
     private var unreadUpdates: Int {
         updatesFeed.unreadCount(since: appModel.updatesLastOpenedAt) { appModel.isChannelEnabled($0) }
+    }
+
+    /// A real triage hit always wins; the Help & Support preview toggle is a fallback so
+    /// that screen can still demonstrate the banner with no real trigger active.
+    private var activeSafetyBanner: TriageResult? {
+        chat.activeTriageResult ?? (appModel.isSafetyBannerPreviewActive ? .previewSample : nil)
     }
 }
 
@@ -131,14 +137,16 @@ private struct ChatHeader: View {
     }
 }
 
-/// Reserved slot above the thread for a safety warning. No trigger logic yet —
-/// when active it reads as urgent using the safety-red token.
+/// Surfaces above the thread whenever the deterministic red-flag layer (see
+/// `RedFlagTriage.swift`) fires on the most recent message — copy is per-category, not
+/// generic, so the resource pointed to actually matches what was described (911 vs.
+/// Poison Control vs. 988).
 struct SafetyBanner: View {
-    let isActive: Bool
+    let result: TriageResult?
 
     var body: some View {
         Group {
-            if isActive {
+            if let result {
                 HStack(alignment: .top, spacing: 12) {
                     // Shape and color untouched — weight harmonized to the chrome token.
                     UIChromeIcon(
@@ -148,10 +156,10 @@ struct SafetyBanner: View {
                         color: Theme.cream
                     )
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Seek care now")
+                        Text(result.title)
                             .screenHeadline(24)
                             .foregroundStyle(Theme.cream)
-                        Text("What you described may need urgent attention. Contact a clinician, or call 911 in an emergency.")
+                        Text(result.message)
                             .bodyText(15)
                             .foregroundStyle(Theme.cream.opacity(0.92))
                             .fixedSize(horizontal: false, vertical: true)
@@ -190,12 +198,15 @@ private struct MessageRow: View {
                     .padding(.vertical, 13)
                     .background {
                         RoundedRectangle(cornerRadius: Theme.radiusCard, style: .continuous)
-                            .fill(message.role == .user ? Theme.cream : Theme.surface)
+                            .fill(message.isSafetyEscalation ? Theme.safetyRed.opacity(0.12) : (message.role == .user ? Theme.cream : Theme.surface))
                     }
                     .overlay {
                         if message.role == .grounded {
                             RoundedRectangle(cornerRadius: Theme.radiusCard, style: .continuous)
-                                .strokeBorder(message.isError ? Theme.cream.opacity(0.22) : Theme.hairline, lineWidth: 1)
+                                .strokeBorder(
+                                    message.isSafetyEscalation ? Theme.safetyRed.opacity(0.65) : (message.isError ? Theme.cream.opacity(0.22) : Theme.hairline),
+                                    lineWidth: message.isSafetyEscalation ? 1.5 : 1
+                                )
                         }
                     }
                 if message.role == .grounded { Spacer(minLength: 40) }
