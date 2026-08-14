@@ -104,4 +104,17 @@ jobs:
 
       - name: Install and launch the app
         run: |
-          APP_PATH=$(find build
+          APP_PATH=$(find build -name "Grounded.app" -path "*iphonesimulator*" | head -1)
+          echo "App path: $APP_PATH"
+          xcrun simctl install "${{ steps.sim.outputs.udid }}" "$APP_PATH"
+          xcrun simctl launch "${{ steps.sim.outputs.udid }}" app.rork.11hs3d669rqjl4wb8wlwy
+          sleep 6
+
+      - name: Take a screenshot
+        run: xcrun simctl io "${{ steps.sim.outputs.udid }}" screenshot screenshot.png
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: grounded-app-screenshot
+          path: ios-grounded/screenshot.png
