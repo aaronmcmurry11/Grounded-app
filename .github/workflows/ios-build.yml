@@ -21,11 +21,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Diagnostics — what's actually on this runner
+        run: |
+          echo "--- Installed Xcode apps ---"
+          ls /Applications | grep -i xcode || true
+          echo "--- Default xcodebuild -version ---"
+          xcodebuild -version
+          echo "--- Installed simulator runtimes (default Xcode) ---"
+          xcrun simctl list runtimes || true
+
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.app || true
 
-      - name: Show available simulators (debugging aid)
-        run: xcrun simctl list devicetypes | grep iPhone | head -5
+      - name: Diagnostics after selecting Xcode 16
+        run: |
+          echo "--- xcodebuild -version ---"
+          xcodebuild -version
+          echo "--- Installed simulator runtimes ---"
+          xcrun simctl list runtimes || true
+          echo "--- Destinations xcodebuild sees for the Grounded scheme ---"
+          xcodebuild -showdestinations -project Grounded.xcodeproj -scheme Grounded || true
 
       - name: Build for Simulator (no code signing)
         run: |
@@ -33,12 +48,12 @@ jobs:
           xcodebuild build \
             -project Grounded.xcodeproj \
             -scheme Grounded \
-            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             | xcpretty || xcodebuild build \
             -project Grounded.xcodeproj \
             -scheme Grounded \
-            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
