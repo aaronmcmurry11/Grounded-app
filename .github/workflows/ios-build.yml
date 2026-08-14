@@ -48,3 +48,60 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
+
+  screenshot:
+    # Separate job: actually launches the app on a virtual iPhone screen and
+    # saves what it looks like, so Aaron can see real progress without a Mac
+    # or an Apple Developer account. Not interactive — just a snapshot of
+    # whatever screen the app opens to (currently onboarding, since a fresh
+    # simulator install has no saved state). Runs only if the compile check
+    # above passes, so we don't waste runner time screenshotting broken code.
+    needs: build
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios-grounded
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
+
+      - name: Find an available iPhone simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; data=json.load(sys.stdin); \
+              devices=[d for runtime in data['devices'].values() for d in runtime if 'iPhone' in d['name']]; \
+              print(devices[0]['udid'] if devices else '')")
+          if [ -z "$UDID" ]; then
+            echo "No iPhone simulator found" >&2
+            exit 1
+          fi
+          echo "Using simulator: $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Boot the simulator
+        run: xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+
+      - name: Build for that specific simulator
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath "$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty || xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath "$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Install and launch the app
+        run: |
+          APP_PATH=$(find build
