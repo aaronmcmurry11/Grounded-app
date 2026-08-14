@@ -1,0 +1,585 @@
+{
+  "schemaNote": "Structured data for Grounded's Apothecary feature (brief section 11: Apothecary browse + Remedy Detail screens). Generated from claude/apothecary-sourcing-draft.md in the Grounded project — read that file for full context, compliance flags, and the DIY household scouting notes not included here. Content is sourced, original writing; nothing lifted from Forgotten Home Apothecary. NOT clinically validated — see brief section 8/13 for the open compliance risk this does not resolve.",
+  "evidenceTierDefinitions": {
+    "Traditional use": "Documented traditional/folk use, typically backed by a government or regulatory herbal monograph (e.g. NCCIH, EMA HMPC, Health Canada NHP) rather than a dedicated clinical trial.",
+    "Clinical tier": "At least one peer-reviewed human study or a regulatory monograph citing clinical evidence. Does not guarantee strong or conclusive evidence — some clinical-tier entries rest on small or preliminary trials, noted in evidenceNote.",
+    "Reviewed by [team] herbalist": "Not currently populated. No practitioner is part of the plan as of Aug 2026 (brief section 8/13). Placeholder only — decide whether to show this tier as empty/unused in v1 UI or omit it entirely."
+  },
+  "categories": [
+    {
+      "name": "Respiratory",
+      "colorHex": "#28345A"
+    },
+    {
+      "name": "Digestive",
+      "colorHex": "#6E3524"
+    },
+    {
+      "name": "Sleep",
+      "colorHex": "#412A45"
+    },
+    {
+      "name": "Skin & Immune",
+      "colorHex": "#5C4423"
+    }
+  ],
+  "remedies": [
+    {
+      "id": "honey-occasional-cough",
+      "name": "Honey for Occasional Cough",
+      "category": "Respiratory",
+      "shortDescription": "A spoonful of honey, traditionally used to ease nighttime cough.",
+      "ailment": "Occasional dry or nighttime cough associated with a cold or throat irritation",
+      "prepType": "Taken straight, or stirred into warm (not boiling) water or tea",
+      "ingredients": [
+        "1–2 tsp honey (studies most often used buckwheat honey)"
+      ],
+      "directions": [
+        "Take by the spoonful, or stir into a cup of warm water or herbal tea and sip."
+      ],
+      "dosageFrequency": "½ tsp for ages 1–5, 1 tsp for ages 6–11, 2 tsp for age 12 and up — up to 30 minutes before bedtime; may repeat through the day as needed.",
+      "contraindications": [
+        "Never give honey to infants under 12 months (risk of infant botulism).",
+        "Use caution with diabetes given sugar content."
+      ],
+      "sources": [
+        "Paul IM, Beiler J, McMonagle A, et al., \"Effect of Honey, Dextromethorphan, and No Treatment on Nocturnal Cough and Sleep Quality for Coughing Children and Their Parents,\" Archives of Pediatrics & Adolescent Medicine, 2007 (funded by the National Honey Board)",
+        "Oduwole O et al., \"Honey for acute cough in children,\" Cochrane Database of Systematic Reviews (independent synthesis; notes trial funding mix includes honey-industry boards)",
+        "NCCIH, \"The Common Cold and Complementary Health Approaches\""
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Citation corrected Aug 2026 — the card previously misattributed a different paper's title/journal to Paul et al. 2007. Both primary pediatric-cough trials in circulation (Paul 2007; Cohen et al. 2012, Pediatrics) were funded by honey-industry boards (US National Honey Board; Honey Board of Israel, respectively). Kept at Clinical tier because the independent Cochrane review (Oduwole et al.) and NCCIH's own synthesis, not tied to industry funding, still conclude honey probably relieves cough symptoms better than no treatment or placebo (low-to-moderate certainty) — unlike elderberry, the independently-reviewed evidence here is genuinely supportive, not just industry-reported.",
+      "safetyFlag": "infant-botulism-risk",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "thyme-gargle-throat-irritation",
+      "name": "Thyme Infusion Gargle for Throat Irritation",
+      "category": "Respiratory",
+      "shortDescription": "A thyme tea gargle traditionally used for sore or irritated throats.",
+      "ailment": "Sore or irritated throat, minor throat inflammation",
+      "prepType": "Hot-water infusion, used as a gargle",
+      "ingredients": [
+        "1–2 tsp dried thyme leaf"
+      ],
+      "directions": [
+        "Steep in freshly boiled water, covered, for 10 minutes.",
+        "Strain and cool to a comfortable temperature."
+      ],
+      "dosageFrequency": "Gargle with 1 tbsp, 3 times daily; do not swallow the gargle preparation.",
+      "contraindications": [
+        "Discontinue and seek medical care if symptoms worsen or last more than 7 days.",
+        "Supervise children using it.",
+        "Not a substitute for care if breathing is affected."
+      ],
+      "sources": [
+        "Health Canada Natural Health Products Ingredient Database, Thyme (Thymus vulgaris) monograph"
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": null,
+      "safetyFlag": null
+    },
+    {
+      "id": "eucalyptus-steam-nasal-congestion",
+      "name": "Steam Inhalation with Eucalyptus for Nasal Congestion",
+      "category": "Respiratory",
+      "shortDescription": "Eucalyptus steam inhalation traditionally used for stuffy sinuses.",
+      "ailment": "Nasal or sinus congestion",
+      "prepType": "Steam inhalation",
+      "ingredients": [
+        "2–3 drops eucalyptus essential oil",
+        "A bowl of hot (not boiling) water"
+      ],
+      "directions": [
+        "Add the oil to the water in a heat-safe bowl.",
+        "Lean over it with a towel draped over the head, close eyes, and breathe deeply for 5–10 minutes, keeping the face at least 12 inches from the water."
+      ],
+      "dosageFrequency": "Up to twice daily as needed.",
+      "contraindications": [
+        "Not for children under 6 (eucalyptol-type compounds have been linked to laryngospasm in young children).",
+        "Keep away from eyes.",
+        "Discontinue if it triggers coughing or irritation, particularly with asthma."
+      ],
+      "sources": [
+        "NCCIH, \"The Common Cold and Complementary Health Approaches\"",
+        "Supporting primary literature on steam inhalation with Eucalyptus globulus oil"
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "Preliminary evidence",
+      "safetyFlag": "not-for-young-children"
+    },
+    {
+      "id": "elderberry-syrup-cold-flu",
+      "name": "Elderberry Syrup for Cold/Flu Symptom Support",
+      "category": "Respiratory",
+      "shortDescription": "Cooked elderberry syrup, taken at first sign of cold or flu symptoms.",
+      "ailment": "Cold and flu symptoms, taken at first onset",
+      "prepType": "Cooked syrup, taken orally",
+      "ingredients": [
+        "Fully cooked, strained elderberry (Sambucus nigra) syrup — commercial preparation or fully cooked at home; never raw berries"
+      ],
+      "directions": [
+        "Take at the first sign of symptoms."
+      ],
+      "dosageFrequency": "Typically 1 tbsp for adults, 1 tsp for children, up to 4 times daily for a short course of a few days (follow product label).",
+      "contraindications": [
+        "Raw or unripe elderberries, and the plant's leaves/stems, contain cyanide-producing compounds and are toxic if not fully cooked.",
+        "Caution with autoimmune conditions given the plant's immune-stimulating properties.",
+        "Not established as safe in pregnancy or breastfeeding.",
+        "Consult a provider if on immunosuppressant medication."
+      ],
+      "sources": [
+        "NCCIH, \"Elderberry: Usefulness and Safety\"",
+        "Zakay-Rones Z et al., \"Randomized Study of the Efficacy and Safety of Oral Elderberry Extract in the Treatment of Influenza A and B Virus Infections,\" Journal of International Medical Research, 2004 (sponsored by Razei Bar Ltd., manufacturer of the Sambucol® extract studied; no independent conflict-of-interest statement in the paper)",
+        "Macknin M, Mace S, Wolski K, Negrey J, et al., \"Elderberry Extract Outpatient Influenza Treatment for Emergency Room Patients Ages 5 and Above: A Randomized, Double-Blind, Placebo-Controlled Trial,\" Journal of General Internal Medicine, 2020 (independently funded by the Wendel Family Foundation and Cleveland Clinic; found no significant benefit)"
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "Downgraded from Clinical tier, Aug 2026. The positive elderberry trials in circulation (Zakay-Rones 1995/2004, Kong 2009, Tiralongo 2016) were each funded, product-supplied, or co-designed by an elderberry supplement manufacturer (Razei Bar/Sambucol® or Iprona AG); a 2021 systematic review rated the overall evidence 'very low certainty.' The one independently-funded trial found (Macknin et al. 2020, Cleveland Clinic) found no significant benefit and a post-hoc analysis suggested elderberry performed slightly worse than placebo. Doesn't currently clear the bar for Clinical tier as defined (peer-reviewed evidence with funding disclosed) — kept as a traditional remedy, not removed, since traditional use for colds/flu is real and well-documented.",
+      "safetyFlag": "raw-berries-toxic",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "saltwater-gargle-sore-throat",
+      "name": "Saltwater Gargle for Sore Throat",
+      "category": "Respiratory",
+      "shortDescription": "A simple saline gargle for sore or irritated throats.",
+      "ailment": "Sore throat, minor throat irritation",
+      "prepType": "Saline gargle",
+      "ingredients": [
+        "¼–½ tsp table salt",
+        "8 oz warm water"
+      ],
+      "directions": [
+        "Dissolve the salt fully in warm water.",
+        "Gargle for 30 seconds to 1 minute, then spit out — do not swallow."
+      ],
+      "dosageFrequency": "3 times daily, or as needed.",
+      "contraindications": [
+        "Not appropriate for children too young to gargle safely without swallowing (aspiration risk, generally under about 6 years).",
+        "Frequent, prolonged use can irritate the mucosa."
+      ],
+      "sources": [
+        "Satomura K et al. (Great Cold Investigators-I), \"Prevention of Upper Respiratory Tract Infections by Gargling: A Randomized Trial,\" American Journal of Preventive Medicine, 2005 (funded by Japan's Ministry of Health, Labour and Welfare; no competing interests declared)",
+        "Lindsey TG, Gillette B, \"The Effectiveness of Saltwater Gargling on the Prevention of Upper Respiratory Tract Infections,\" Osteopathic Family Physician, Vol. 13 No. 4 (2021)"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Citation expanded Aug 2026 to include the primary RCT. Government-funded with no industry involvement — salt water has no manufacturer with a stake in a positive result, so this is about as conflict-free as evidence gets.",
+      "safetyFlag": null,
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "ginger-tea-nausea",
+      "name": "Fresh Ginger Tea for Occasional Nausea",
+      "category": "Digestive",
+      "shortDescription": "Fresh ginger root tea, traditionally used to settle occasional nausea.",
+      "ailment": "Occasional nausea (e.g., motion-related)",
+      "prepType": "Fresh-root infusion (tea)",
+      "ingredients": [
+        "About 1 inch fresh ginger root, sliced or grated"
+      ],
+      "directions": [
+        "Steep in hot water for 10 minutes.",
+        "Strain."
+      ],
+      "dosageFrequency": "Up to 3–4 cups daily.",
+      "contraindications": [
+        "May cause heartburn, abdominal discomfort, or mouth/throat irritation in some people.",
+        "Anyone pregnant or on blood-thinning medication should check with a provider first, given ginger's mild effect on bleeding risk."
+      ],
+      "sources": [
+        "NCCIH, \"Ginger\""
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Evidence strongest for pregnancy-related nausea; mixed for other uses. Funding-conflict check (Aug 2026): NCCIH itself is an independent government (NIH) body with no commercial stake, so the citation source is clean. We did not confirm funding for every individual primary trial NCCIH's synthesis draws on — flagging that as a residual gap rather than claiming a full check, consistent with the rigor applied elsewhere.",
+      "safetyFlag": null,
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "peppermint-oil-ibs-bloating",
+      "name": "Enteric-Coated Peppermint Oil for Bloating and IBS-Type Discomfort",
+      "category": "Digestive",
+      "shortDescription": "Enteric-coated peppermint oil capsules for occasional bloating.",
+      "ailment": "Occasional bloating, IBS-type digestive discomfort",
+      "prepType": "Enteric-coated capsule (oral)",
+      "ingredients": [
+        "Enteric-coated peppermint oil capsule (commercial product)"
+      ],
+      "directions": [
+        "Take the capsule whole with water; do not crush or chew."
+      ],
+      "dosageFrequency": "Per product label — studies commonly used roughly 0.2 mL enteric-coated oil, 2–3 times daily before meals.",
+      "contraindications": [
+        "Enteric coating matters — uncoated peppermint oil can worsen heartburn/reflux.",
+        "Avoid with GERD or hiatal hernia unless coated.",
+        "Not for infants or young children (menthol-related choking/laryngospasm risk).",
+        "Taking with antacids can dissolve the coating early and reduce effectiveness."
+      ],
+      "sources": [
+        "NCCIH, \"Peppermint Oil\"",
+        "Lacy BE, Pimentel M, Brenner DM, et al., \"ACG Clinical Guideline: Management of Irritable Bowel Syndrome,\" American Journal of Gastroenterology, 2021"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Citation specified Aug 2026. Part of the pooled trial evidence behind the ACG guideline's recommendation includes an industry-funded trial (Cash, Epstein & Shah 2016) whose three authors all held paid roles at the peppermint-oil supplement maker studied — the meta-analysis synthesizing this evidence flagged that trial itself as high risk of bias due to conflict of interest. Kept at Clinical tier because the recommendation rests on a formal medical-society guideline and a broader pooled-trial base, not on the conflicted trial alone.",
+      "safetyFlag": "not-for-young-children",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "fennel-tea-gas-bloating",
+      "name": "Fennel Seed Tea for Gas and Bloating",
+      "category": "Digestive",
+      "shortDescription": "A fennel seed infusion traditionally used for gas and bloating.",
+      "ailment": "Gas, bloating, mild digestive spasm",
+      "prepType": "Seed infusion (tea)",
+      "ingredients": [
+        "1–2 tsp crushed fennel seed"
+      ],
+      "directions": [
+        "Lightly crush the seeds to release their oils, then steep covered in hot water for 10 minutes.",
+        "Strain."
+      ],
+      "dosageFrequency": "3–4 times daily; short-term use only (1–2 weeks continuous, per regulatory guidance).",
+      "contraindications": [
+        "Avoid with known allergy to fennel or related plants (carrot/celery family).",
+        "Not recommended under age 4.",
+        "Avoid in pregnancy and breastfeeding as a precaution — safety data is insufficient."
+      ],
+      "sources": [
+        "European Medicines Agency (HMPC), \"European Union herbal monograph on Foeniculum vulgare Miller subsp. vulgare var. dulce\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": null,
+      "safetyFlag": null
+    },
+    {
+      "id": "dgl-licorice-heartburn",
+      "name": "DGL Licorice for Occasional Heartburn",
+      "category": "Digestive",
+      "shortDescription": "Deglycyrrhizinated licorice chewable tablets for occasional heartburn.",
+      "ailment": "Occasional heartburn or mild indigestion",
+      "prepType": "Chewable tablet (deglycyrrhizinated form only)",
+      "ingredients": [
+        "DGL (deglycyrrhizinated licorice) chewable tablet"
+      ],
+      "directions": [
+        "Chew tablet 20–30 minutes before meals."
+      ],
+      "dosageFrequency": "Commonly 2 tablets (~380 mg), 3 times daily, short-term (follow product label).",
+      "contraindications": [
+        "Must be the deglycyrrhizinated (DGL) form.",
+        "Regular licorice root, which contains glycyrrhizin, can cause dangerously elevated blood pressure, low potassium, and irregular heartbeat with prolonged or high-dose use — avoid regular licorice with hypertension, heart or kidney disease, or in pregnancy.",
+        "Check with a provider if taking corticosteroids."
+      ],
+      "sources": [
+        "NCCIH, \"Licorice Root\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "NCCIH notes evidence specifically for digestive symptoms is limited",
+      "safetyFlag": "cardiac-bp-risk-if-non-dgl"
+    },
+    {
+      "id": "slippery-elm-digestive-soothing",
+      "name": "Slippery Elm for Digestive Soothing",
+      "category": "Digestive",
+      "shortDescription": "Slippery elm bark powder, traditionally used to soothe mild digestive irritation.",
+      "ailment": "Mild digestive irritation, occasional throat or GI soothing",
+      "prepType": "Powder mixed into a gruel/tea",
+      "ingredients": [
+        "1 tbsp slippery elm inner bark powder"
+      ],
+      "directions": [
+        "Mix the powder with a small amount of water into a paste first.",
+        "Add hot water to reach a gruel or tea consistency; stir well."
+      ],
+      "dosageFrequency": "Up to 3 times daily.",
+      "contraindications": [
+        "Its mucilage content can slow the absorption of other oral medications — take other medications at least 1–2 hours apart.",
+        "Insufficient safety data in pregnancy/breastfeeding.",
+        "Drink adequate fluids alongside it."
+      ],
+      "sources": [
+        "NCBI Bookshelf, LiverTox entry on Slippery Elm"
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": null,
+      "safetyFlag": "medication-absorption-interaction"
+    },
+    {
+      "id": "chamomile-tea-presleep-relaxation",
+      "name": "Chamomile Tea for Pre-Sleep Relaxation",
+      "category": "Sleep",
+      "shortDescription": "A calming chamomile tea traditionally used before bed.",
+      "ailment": "Occasional difficulty winding down before bed",
+      "prepType": "Flower infusion (tea)",
+      "ingredients": [
+        "2–3 tsp dried chamomile flower"
+      ],
+      "directions": [
+        "Steep covered in hot water for 5–10 minutes.",
+        "Strain."
+      ],
+      "dosageFrequency": "1 cup, 30–45 minutes before bed.",
+      "contraindications": [
+        "Avoid with known allergy to ragweed or other daisy-family (Asteraceae) plants.",
+        "Has mild estrogen-like activity — use caution with hormone-sensitive conditions.",
+        "May interact with blood thinners (e.g., warfarin) and sedative medications.",
+        "Limited safety data in pregnancy/breastfeeding."
+      ],
+      "sources": [
+        "NCCIH, \"Chamomile\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "NCCIH notes direct evidence for sleep specifically is limited — a single insomnia trial found no benefit",
+      "safetyFlag": null
+    },
+    {
+      "id": "valerian-root-sleeplessness",
+      "name": "Valerian Root for Occasional Sleeplessness",
+      "category": "Sleep",
+      "shortDescription": "Valerian root, traditionally used for occasional difficulty falling asleep.",
+      "ailment": "Occasional difficulty falling asleep",
+      "prepType": "Capsule, or root/rhizome tea",
+      "ingredients": [
+        "Valerian root capsule, or 1–2 tsp dried valerian root"
+      ],
+      "directions": [
+        "If using tea, steep the root in hot water for 10–15 minutes and strain (note: valerian tea has a strong, often unpleasant smell)."
+      ],
+      "dosageFrequency": "300–600 mg standardized extract, or tea, 30–60 minutes before bed; not recommended continuously beyond about 4–6 weeks.",
+      "contraindications": [
+        "Do not combine with alcohol, sedatives, or other sleep aids.",
+        "May cause morning grogginess, vivid dreams, or headache.",
+        "Don't stop abruptly after prolonged use.",
+        "Avoid driving or operating machinery until its effects are known.",
+        "Limited pregnancy/breastfeeding safety data.",
+        "The American Academy of Sleep Medicine's 2017 guideline recommends against valerian for chronic insomnia."
+      ],
+      "sources": [
+        "NCCIH, \"Valerian\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "Clinical evidence is mixed/inconsistent",
+      "safetyFlag": "sedative-interaction"
+    },
+    {
+      "id": "lavender-relaxation-sleep",
+      "name": "Lavender for Relaxation Before Sleep",
+      "category": "Sleep",
+      "shortDescription": "Lavender aromatherapy or tea, traditionally used to unwind before bed.",
+      "ailment": "Occasional restlessness or difficulty relaxing before bed",
+      "prepType": "Aromatherapy (essential oil), or flower tea",
+      "ingredients": [
+        "Lavender essential oil (a few drops), or 1–2 tsp dried lavender flower"
+      ],
+      "directions": [
+        "For aromatherapy — add a few drops to a diffuser in the bedroom about 30 minutes before bed, or place a drop on a cotton ball near (not on) the pillow.",
+        "For tea — steep dried flower in hot water 5–10 minutes; strain."
+      ],
+      "dosageFrequency": "Nightly, as part of a wind-down routine.",
+      "contraindications": [
+        "Oral lavender products may cause GI upset.",
+        "Topical use can trigger allergic skin reactions — always dilute essential oil in a carrier oil before any skin contact, never apply undiluted.",
+        "Possible interaction with sedative medications; use caution before scheduled surgery.",
+        "Limited safety data in pregnancy/breastfeeding."
+      ],
+      "sources": [
+        "NCCIH, \"Lavender\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "NCCIH: evidence for sleep specifically is preliminary/unclear",
+      "safetyFlag": "never-apply-undiluted-essential-oil"
+    },
+    {
+      "id": "magnesium-glycinate-sleep-quality",
+      "name": "Magnesium Glycinate for Sleep Quality",
+      "category": "Sleep",
+      "shortDescription": "A magnesium glycinate supplement studied for sleep quality.",
+      "ailment": "Occasional poor sleep quality",
+      "prepType": "Oral supplement (capsule or powder)",
+      "ingredients": [
+        "Magnesium bisglycinate (glycinate) supplement"
+      ],
+      "directions": [
+        "Take with food, per product label."
+      ],
+      "dosageFrequency": "Commonly 200–400 mg elemental magnesium in the evening; follow product label.",
+      "contraindications": [
+        "Avoid high doses with kidney disease (impaired magnesium clearance).",
+        "May cause GI upset or loose stool at higher doses (glycinate form is generally better tolerated than other forms).",
+        "May interact with certain antibiotics and other medications — separate dosing by a few hours.",
+        "Check with a provider if pregnant, breastfeeding, or on medication."
+      ],
+      "sources": [
+        "Schuster J, Cycelskij I, Lopresti AL, Hahn A, \"Magnesium Bisglycinate Supplementation in Healthy Adults Reporting Poor Sleep: A Randomized, Placebo-Controlled Trial,\" Nature and Science of Sleep, 2025 (funded by the Institute of Food and One Health, Leibniz University Hannover — an academic funder, not a supplement manufacturer)",
+        "Mah J, Pitre T, \"Oral magnesium supplementation for insomnia in older adults: a systematic review & meta-analysis,\" BMC Complementary Medicine and Therapies, 2021 (independent; no industry funding)"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Citation specified Aug 2026 — this is the only RCT testing the glycinate/bisglycinate form specifically; academically funded, with a modest but real effect (small effect size). One co-author discloses general nutraceutical-industry consulting work, not tied to a specific product in this trial — noted for transparency. Broader magnesium-for-sleep evidence (Mah & Pitre) is independent but rated low-to-very-low certainty overall, so treat efficacy claims as modest, not strong.",
+      "safetyFlag": null,
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "tart-cherry-juice-sleep",
+      "name": "Tart Cherry Juice for Sleep Support",
+      "category": "Sleep",
+      "shortDescription": "Tart cherry juice, studied in a small pilot trial for sleep support.",
+      "ailment": "Occasional difficulty sleeping through the night (studied mainly in older adults)",
+      "prepType": "Juice, taken orally",
+      "ingredients": [
+        "Tart (Montmorency) cherry juice or juice blend"
+      ],
+      "directions": [
+        "Drink first thing in the morning, then again 1–2 hours before bed."
+      ],
+      "dosageFrequency": "About 8 oz, twice daily, per the pilot-study protocol.",
+      "contraindications": [
+        "Sugar content — use caution with diabetes/blood sugar concerns, or choose an unsweetened variety.",
+        "May cause GI upset in some.",
+        "Based on a very small pilot study — treat as a low-risk, gentle option rather than a proven remedy."
+      ],
+      "sources": [
+        "Pigeon WR, Carr M, Gorman C, Perlis ML, \"Effects of a Tart Cherry Juice Beverage on the Sleep of Older Adults with Insomnia: A Pilot Study,\" Journal of Medicinal Food, 2010"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Small pilot study — flagged as preliminary. Funding-conflict check (Aug 2026): this specific paper's funding/acknowledgments statement could not be confirmed after repeated attempts (journal full text paywalled, PubMed/PMC access blocked). Flagging transparently rather than assuming either way: tart cherry sleep and exercise-recovery research as a category is frequently funded or product-donated by industry groups (e.g., the Cherry Marketing Institute, CherryActive), so treat this as an open disclosure gap, not a confirmed conflict.",
+      "safetyFlag": null,
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "colloidal-oatmeal-itchy-skin",
+      "name": "Colloidal Oatmeal Bath or Cream for Itchy, Irritated Skin",
+      "category": "Skin & Immune",
+      "shortDescription": "Colloidal oatmeal baths or cream for itchy, dry, or irritated skin.",
+      "ailment": "Itchy, dry, or mildly irritated skin (e.g., minor eczema-type dryness or rash-related itch)",
+      "prepType": "Bath soak, or topical cream",
+      "ingredients": [
+        "Colloidal (finely ground) oatmeal — bath packet or cream product"
+      ],
+      "directions": [
+        "For bath — dissolve a colloidal oatmeal packet in warm (not hot) bathwater, soak 10–15 minutes, and pat skin dry gently afterward.",
+        "For cream — apply a thin layer to the affected area up to twice daily."
+      ],
+      "dosageFrequency": "Bath once daily as needed; cream 1–2 times daily per label.",
+      "contraindications": [
+        "Rare allergic reaction possible — patch test first if the skin is sensitive or there's a known oat allergy.",
+        "Avoid hot water, which worsens dryness and itch.",
+        "Not a substitute for prescribed treatment during a diagnosed eczema/dermatitis flare."
+      ],
+      "sources": [
+        "Lynde C, \"Colloidal Oatmeal Use in Dermatology,\" Skin Therapy Letter, 2020 (independent academic dermatology author; no disclosed industry funding)"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Citation corrected Aug 2026 — the original citation was vague and didn't clearly match a real source; replaced with the actual independent review it likely referred to. Flagging for transparency: some other frequently-cited colloidal-oatmeal research (e.g., Reynertson et al. 2016, Journal of Drugs in Dermatology) was authored entirely by scientists employed by Johnson & Johnson Consumer Inc., which makes Aveeno colloidal-oatmeal products — that study is not our citation, but it's part of the broader evidence landscape and worth knowing about.",
+      "safetyFlag": null,
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "aloe-vera-minor-burns",
+      "name": "Aloe Vera Gel for Minor Burns",
+      "category": "Skin & Immune",
+      "shortDescription": "Pure aloe vera gel applied to minor burns and sunburn.",
+      "ailment": "Minor (first-degree) burns, minor sunburn",
+      "prepType": "Topical gel",
+      "ingredients": [
+        "Pure aloe vera gel (fresh from the leaf, or a minimally processed product with no added fragrance/alcohol)"
+      ],
+      "directions": [
+        "Apply a thin layer directly to the clean, cooled burn area."
+      ],
+      "dosageFrequency": "2–3 times daily, or as needed for comfort.",
+      "contraindications": [
+        "Not for open wounds, deep or large burns, or burns showing signs of infection — seek medical care for anything beyond a small first-degree burn.",
+        "Occasional reports of contact irritation or allergic reaction."
+      ],
+      "sources": [
+        "NCCIH, \"Aloe Vera\""
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Funding-conflict check (Aug 2026): NCCIH itself is an independent government (NIH) body with no commercial stake, so the citation source is clean. We did not confirm funding for every individual primary burn trial NCCIH's synthesis draws on — flagging that as a residual gap rather than claiming a full check, consistent with the rigor applied elsewhere.",
+      "safetyFlag": "not-for-deep-or-infected-wounds",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "honey-wound-dressing",
+      "name": "Honey as a Dressing for Minor Superficial Wounds",
+      "category": "Skin & Immune",
+      "shortDescription": "Honey used as a topical dressing for minor superficial wounds and burns.",
+      "ailment": "Minor superficial wounds, minor superficial burns",
+      "prepType": "Topical wound dressing",
+      "ingredients": [
+        "Medical-grade or food-grade honey (food-grade honey is what most studies used)"
+      ],
+      "directions": [
+        "Apply a layer of honey directly to the clean wound, or onto a sterile gauze dressing.",
+        "Cover and change daily."
+      ],
+      "dosageFrequency": "Once-daily dressing change until healed.",
+      "contraindications": [
+        "Not for deep wounds, puncture wounds, wounds showing signs of infection, or anyone with a known honey/bee-product allergy.",
+        "Not a substitute for medical care on burns beyond minor/superficial, diabetic wounds, or any wound not improving within a few days."
+      ],
+      "sources": [
+        "Jull AB, Cullum N, Dumville JC, Westby MJ, Deshpande S, Walker N, \"Honey as a Topical Treatment for Wounds,\" Cochrane Database of Systematic Reviews, 2015 (26 trials, ~3,011 participants)"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Evidence strongest for minor/moderate burns; limited and mixed for other wound types. Funding-conflict check (Aug 2026): two of the review's own authors were investigators on one included trial (HALT) that received a small, unconditional cash contribution from a honey-dressing manufacturer — disclosed transparently in the review's own Declarations of Interest. Funding sources for most other included trials were not reported by their original authors. Kept at Clinical tier since this is a legitimate, transparent Cochrane review with the conflict disclosed rather than hidden — but flagging it per our own transparency standard.",
+      "safetyFlag": "not-for-deep-or-infected-wounds",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "calendula-ointment-skin-irritation",
+      "name": "Calendula Ointment for Minor Skin Irritation",
+      "category": "Skin & Immune",
+      "shortDescription": "Calendula ointment for minor skin inflammation and wound support.",
+      "ailment": "Minor skin inflammation, minor wounds, general skin irritation",
+      "prepType": "Topical ointment/cream",
+      "ingredients": [
+        "Calendula (Calendula officinalis) flower extract ointment"
+      ],
+      "directions": [
+        "Apply a thin layer to the affected area."
+      ],
+      "dosageFrequency": "2–3 times daily.",
+      "contraindications": [
+        "Avoid with known allergy to daisy-family (Asteraceae) plants — ragweed, marigold, chrysanthemum.",
+        "Discontinue if irritation develops.",
+        "Not a substitute for medical care on wounds that are deep, infected, or not healing."
+      ],
+      "sources": [
+        "European Medicines Agency (HMPC) recognition of calendula for minor skin inflammation and as a wound-healing aid",
+        "Deligiannidou GE, Papadimitriou K, Poulios E, Kontogiorgis C, Papadopoulou SK, Giaginis C, \"An Update of Phytotherapeutic Advances of Marigold (Calendula officinalis L.) in Wound Healing,\" Plants (MDPI), 2025 (all authors academically affiliated; no external funding, no conflicts of interest declared)"
+      ],
+      "evidenceTier": "Clinical tier",
+      "evidenceNote": "Funding-conflict check (Aug 2026): both sources clean — the EMA/HMPC monograph is a non-commercial regulatory assessment, and the 2025 review discloses no external funding and no author conflicts. Worth noting: the EMA/HMPC listing itself is a 'traditional use' registration (not 'well-established use') — it reflects long documented safe use rather than a large clinical-trial base.",
+      "safetyFlag": "not-for-deep-or-infected-wounds",
+      "fundingConflictChecked": true
+    },
+    {
+      "id": "garlic-immune-support",
+      "name": "Garlic for General Immune Support",
+      "category": "Skin & Immune",
+      "shortDescription": "Fresh garlic or supplements, traditionally used for immune support.",
+      "ailment": "General immune support during cold/flu season",
+      "prepType": "Whole food, or oral supplement",
+      "ingredients": [
+        "Fresh garlic cloves (crushed or chopped), or aged garlic extract supplement"
+      ],
+      "directions": [
+        "Crush or chop fresh garlic and let it sit about 10 minutes before eating or cooking, to allow allicin to form.",
+        "Or take a standardized supplement per label."
+      ],
+      "dosageFrequency": "1–2 cloves daily with food, or per supplement label.",
+      "contraindications": [
+        "Increases bleeding risk — avoid high doses before surgery or alongside blood-thinning medication.",
+        "May cause GI upset, breath/body odor, or allergic reaction.",
+        "Raw garlic applied directly to skin can cause chemical burns — never apply undiluted.",
+        "Avoid oral use beyond food amounts in pregnancy/breastfeeding."
+      ],
+      "sources": [
+        "NCCIH, \"Garlic\""
+      ],
+      "evidenceTier": "Traditional use",
+      "evidenceNote": "NCCIH notes evidence for immune/cold benefit specifically is limited — only a couple of small studies",
+      "safetyFlag": "skin-chemical-burn-risk"
+    }
+  ]
+}
