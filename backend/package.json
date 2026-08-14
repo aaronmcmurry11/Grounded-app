@@ -1,0 +1,15 @@
+{
+  "name": "grounded-chat-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny Cloudflare Worker that proxies the Grounded app's chat requests to Anthropic, keeping the real API key server-side.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260814.1",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.0.0"
+  }
+}
