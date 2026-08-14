@@ -8,20 +8,18 @@ nonisolated struct ChatTurn {
     let remedyIds: [String]
 }
 
-/// Talks to the Rork toolkit proxy (OpenAI-compatible chat completions) so every
-/// message gets a real generated reply. The bundled library is passed in the system
-/// prompt as the only catalog the model may cite — full retrieval comes later.
+/// Talks to our own Cloudflare Worker backend (see /backend in the repo root),
+/// which holds the real Anthropic API key server-side and forwards the request.
+/// The bundled library is passed in the system prompt as the only catalog the
+/// model may cite — full retrieval comes later.
 nonisolated struct GroundedChatService {
-    private let model = "anthropic/claude-haiku-4.5"
-    private let fallbackModels = ["google/gemini-3.5-flash", "openai/gpt-5-mini"]
-
-    private nonisolated struct ChatResponse: Decodable {
-        struct Choice: Decodable {
-            struct Message: Decodable { let content: String? }
-            let message: Message
-            let finish_reason: String?
+    private nonisolated struct AnthropicResponse: Decodable {
+        struct ContentBlock: Decodable {
+            let type: String
+            let text: String?
         }
-        let choices: [Choice]
+        let content: [ContentBlock]
+        let stop_reason: String?
     }
 
     private nonisolated struct ModelPayload: Decodable {
@@ -33,16 +31,12 @@ nonisolated struct GroundedChatService {
         to history: [ChatMessage],
         catalog: [Remedy]
     ) async throws -> ChatTurn {
-        let base = Config.EXPO_PUBLIC_TOOLKIT_URL.trimmingCharacters(in: .whitespaces)
-        let secret = Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY
-        guard !base.isEmpty, !secret.isEmpty,
-              let url = URL(string: "\(base)/v2/vercel/v1/chat/completions") else {
+        let base = Config.backendBaseURL.trimmingCharacters(in: .whitespaces)
+        guard !base.isEmpty, let url = URL(string: "\(base)/chat") else {
             throw ProxyError.notConfigured
         }
 
-        var messages: [[String: Any]] = [
-            ["role": "system", "content": systemPrompt(catalog: catalog)],
-        ]
+        var messages: [[String: Any]] = []
         // Keep the window small — recent turns are what make it feel conversational.
         for message in history.suffix(12) where !message.isError {
             messages.append([
@@ -50,9 +44,10 @@ nonisolated struct GroundedChatService {
                 "content": message.text,
             ])
         }
+        guard !messages.isEmpty else { throw ProxyError.noData }
 
         let body: [String: Any] = [
-            "model": model,
+            "system": systemPrompt(catalog: catalog),
             "messages": messages,
             // Lower than a general chat default: this app's answers need to stay
             // factually tight, and creative variance is where invented statistics,
@@ -62,25 +57,23 @@ nonisolated struct GroundedChatService {
             // JSON envelope must always be able to close. Truncation here is what
             // produced raw, half-finished JSON in the bubble.
             "max_tokens": 2000,
-            "providerOptions": ["gateway": ["models": fallbackModels]],
         ]
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(secret)", forHTTPHeaderField: "Authorization")
+        request.setValue(Config.appSharedKey, forHTTPHeaderField: "X-App-Key")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 60
 
         let (data, _) = try await sendWithRetry(request)
-        let decoded = try JSONDecoder().decode(ChatResponse.self, from: data)
-        guard let choice = decoded.choices.first,
-              let content = choice.message.content,
+        let decoded = try JSONDecoder().decode(AnthropicResponse.self, from: data)
+        guard let content = decoded.content.first(where: { $0.type == "text" })?.text,
               !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw ProxyError.noData
         }
 
-        return try parse(content: content, wasTruncated: choice.finish_reason == "length", catalog: catalog)
+        return try parse(content: content, wasTruncated: decoded.stop_reason == "max_tokens", catalog: catalog)
     }
 
     /// Three-stage recovery so the user never sees machine output:
