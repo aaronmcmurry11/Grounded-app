@@ -5,6 +5,12 @@ name: iOS build check
 # off, so it needs no Apple Developer account and no certificates/secrets.
 # It does NOT produce an installable app (that needs a signed device or
 # TestFlight build, which is a separate, later step).
+#
+# Xcode version note: this project's pbxproj was last touched by Xcode 26
+# (LastUpgradeCheck = 2600, objectVersion = 77) — Xcode 16.x can't fully
+# resolve simulator destinations for a project file this new, even though
+# the simulator runtimes themselves are installed. Must select an Xcode 26.x
+# app on the runner, not 16.x.
 
 on:
   push:
@@ -21,26 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Diagnostics — what's actually on this runner
-        run: |
-          echo "--- Installed Xcode apps ---"
-          ls /Applications | grep -i xcode || true
-          echo "--- Default xcodebuild -version ---"
-          xcodebuild -version
-          echo "--- Installed simulator runtimes (default Xcode) ---"
-          xcrun simctl list runtimes || true
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.app || true
-
-      - name: Diagnostics after selecting Xcode 16
-        run: |
-          echo "--- xcodebuild -version ---"
-          xcodebuild -version
-          echo "--- Installed simulator runtimes ---"
-          xcrun simctl list runtimes || true
-          echo "--- Destinations xcodebuild sees for the Grounded scheme ---"
-          xcodebuild -showdestinations -project Grounded.xcodeproj -scheme Grounded || true
+      - name: Show Xcode version (debugging aid)
+        run: xcodebuild -version
 
       - name: Build for Simulator (no code signing)
         run: |
