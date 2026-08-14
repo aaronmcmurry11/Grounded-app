@@ -13,6 +13,10 @@ nonisolated struct ChatMessage: Identifiable, Hashable {
     /// Remedy suggestions rendered as distinct cards beneath the message.
     var suggestions: [Remedy] = []
     var isError: Bool = false
+    /// True when this message is a deterministic red-flag triage response rather than a
+    /// model-generated reply — styled distinctly in the thread so it reads as a real
+    /// safety notice, not just another bubble.
+    var isSafetyEscalation: Bool = false
 }
 
 /// Prompted chat: every message is answered by the language model. The bundled
@@ -28,6 +32,11 @@ final class ChatModel {
     ]
     var draft: String = ""
     var isThinking = false
+    /// Set when the most recent user message tripped the deterministic red-flag layer.
+    /// Drives the persistent banner in `ChatView` — cleared as soon as a later message
+    /// doesn't re-trigger it, since the banner is a "right now" indicator; the escalation
+    /// text itself stays in the thread as a permanent record.
+    var activeTriageResult: TriageResult?
 
     private let library: RemedyLibrary
     private let service = GroundedChatService()
@@ -46,6 +55,23 @@ final class ChatModel {
 
         draft = ""
         messages.append(ChatMessage(role: .user, text: question))
+
+        // Deterministic safety check runs before the model ever sees this message, and
+        // fully replaces the turn if it fires — see RedFlagTriage.swift for why the chat
+        // model itself is never trusted to make this call.
+        if let triage = RedFlagTriage.evaluate(question) {
+            activeTriageResult = triage
+            messages.append(
+                ChatMessage(
+                    role: .grounded,
+                    text: "\(triage.title). \(triage.message)",
+                    isSafetyEscalation: true
+                )
+            )
+            return
+        }
+        activeTriageResult = nil
+
         isThinking = true
         defer { isThinking = false }
 
