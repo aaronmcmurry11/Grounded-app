@@ -33,10 +33,12 @@ jobs:
           xcodebuild build \
             -project Grounded.xcodeproj \
             -scheme Grounded \
-            -destination 'generic/platform=iOS Simulator' \
+            -sdk iphonesimulator \
             CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
             | xcpretty || xcodebuild build \
             -project Grounded.xcodeproj \
             -scheme Grounded \
-            -destination 'generic/platform=iOS Simulator' \
-            CODE_SIGNING_ALLOWED=NO
+            -sdk iphonesimulator \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
