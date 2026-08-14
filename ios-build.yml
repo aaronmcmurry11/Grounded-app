@@ -1,0 +1,42 @@
+name: iOS build check
+
+# Runs on every push/PR so we get "does it compile" feedback without needing
+# a local Mac. Builds for the iOS Simulator only, with code signing turned
+# off, so it needs no Apple Developer account and no certificates/secrets.
+# It does NOT produce an installable app (that needs a signed device or
+# TestFlight build, which is a separate, later step).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios-grounded
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app || true
+
+      - name: Show available simulators (debugging aid)
+        run: xcrun simctl list devicetypes | grep iPhone | head -5
+
+      - name: Build for Simulator (no code signing)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty || xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO

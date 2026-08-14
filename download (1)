@@ -1,0 +1,37 @@
+# React Native / Expo artifacts (should not exist in Swift projects)
+node_modules/
+.expo/
+.bundle/
+android/
+ios/
+babel.config.js
+metro.config.js
+package.json
+package-lock.json
+tsconfig.json
+app.json
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# macOS
+.DS_Store
+*.swp
+*~
+
+# Rork (legacy — no longer building here, kept in case stray files reappear)
+.rork/
+.env
+
+# Note: Config.swift is intentionally NOT ignored. It holds only non-secret
+# app config (backend URL, low-stakes app key) — the real secret
+# (ANTHROPIC_API_KEY) lives on the Cloudflare Worker in /backend, never here.
