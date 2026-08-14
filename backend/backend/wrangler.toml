@@ -1,0 +1,7 @@
+name = "grounded-chat"
+main = "src/index.ts"
+compatibility_date = "2025-06-01"
+
+# Secrets are NOT set here — they're set via `wrangler secret put` so they
+# never end up in git. See README.md for the exact commands. This file only
+# holds non-secret config.
