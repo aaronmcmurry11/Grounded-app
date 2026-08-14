@@ -28,7 +28,10 @@ Package.resolved
 *.swp
 *~
 
-# Rork
+# Rork (legacy — no longer building here, kept in case stray files reappear)
 .rork/
 .env
-Config.swift
+
+# Note: Config.swift is intentionally NOT ignored. It holds only non-secret
+# app config (backend URL, low-stakes app key) — the real secret
+# (ANTHROPIC_API_KEY) lives on the Cloudflare Worker in /backend, never here.
