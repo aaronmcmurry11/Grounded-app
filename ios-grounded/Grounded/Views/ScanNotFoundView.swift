@@ -61,6 +61,7 @@ struct ScanNotFoundView: View {
             Text("We don't have this one yet")
                 .screenHeadline(28)
                 .foregroundStyle(Theme.cream)
+                .accessibilityIdentifier("scanNotFound.title")
             Text("This barcode isn't in the product databases Grounded checks. That's common for newer or smaller-batch products — it isn't a judgement about it either way.")
                 .bodyText(15)
                 .foregroundStyle(Theme.cream.opacity(0.85))
