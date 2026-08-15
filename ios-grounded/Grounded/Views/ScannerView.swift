@@ -196,6 +196,7 @@ struct ScannerView: View {
             }
             .disabled(isLookingUp)
             .opacity(isLookingUp ? 0.5 : 1)
+            .accessibilityIdentifier("scanner.enterCodeManually")
         }
         .padding(.horizontal, 24)
         .padding(.top, 20)
@@ -313,10 +314,12 @@ private struct ManualCodeSheet: View {
                 }
                 .contentShape(.capsule)
                 .onTapGesture { isFocused = true }
+                .accessibilityIdentifier("manualCode.textField")
 
             PrimaryButton(title: "Look up code", isEnabled: isValid) {
                 onSubmit(code)
             }
+            .accessibilityIdentifier("manualCode.submit")
 
             Spacer(minLength: 0)
         }
