@@ -124,6 +124,7 @@ private struct GroundedTabBar: View {
                     .contentShape(.rect)
                 }
                 .buttonStyle(SoftPressStyle(scale: 0.94))
+                .accessibilityIdentifier("tab.\(tab.rawValue)")
             }
         }
         .padding(6)
