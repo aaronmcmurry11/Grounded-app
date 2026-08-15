@@ -72,6 +72,7 @@ struct ScanResultView: View {
                     .screenHeadline(28)
                     .foregroundStyle(Theme.cream)
                     .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("scanResult.productName")
                 Text(product.gradeSummary)
                     .bodyText(15)
                     .foregroundStyle(Theme.cream.opacity(0.85))
