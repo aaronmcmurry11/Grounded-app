@@ -123,13 +123,18 @@ enum ProductGrading {
     private static let prepMarkers = ["fermented", "cultured", "sprouted", "soaked", "sourdough", "raw milk cheese", "raw-milk cheese"]
     private static let pastureLabels = ["grass-fed", "grass-finished", "pasture-raised", "free-range", "wild-caught", "wild caught"]
 
-    static func grade(productName: String, ingredientsText: String, isOrganic: Bool, labelsTags: [String]) -> ProductGradeResult {
+    static func grade(
+        productName: String, ingredientsText: String, ingredientsUnavailableInEnglish: Bool,
+        isOrganic: Bool, labelsTags: [String]
+    ) -> ProductGradeResult {
         let text = ingredientsText.lowercased()
         let name = productName.lowercased()
 
         // Cultivated/cultured meat override — checked before anything else, forces both
         // badges to F regardless of any other ingredient. See `cultivatedMeatTerms` above for
-        // why `productName` is checked, not just `ingredientsText`.
+        // why `productName` is checked, not just `ingredientsText`. Checked even when
+        // ingredients text is unavailable in English, since `productName` is the primary
+        // signal for this one anyway (per USDA's labeling rule).
         if cultivatedMeatTerms.contains(where: { name.contains($0) || text.contains($0) }) {
             let overrideNote = "Cell-cultivated meat — grown from animal cells in a bioreactor rather than a raised animal. Grounded's ancestral lens doesn't treat this as equivalent to traditionally-raised meat, regardless of any other ingredients in this product."
             return ProductGradeResult(
@@ -139,6 +144,26 @@ enum ProductGrading {
                 nourishmentGrade: "F",
                 nourishmentSummary: "Overridden: this contains cell-cultivated meat.",
                 nourishmentNotes: [overrideNote]
+            )
+        }
+
+        // Found via a real scan (2026-08-16, Nutella): Open Food Facts's ingredient text
+        // mirrors whatever language a product was originally entered in — a French-entered
+        // product returns French text, which every English keyword below would silently fail
+        // to match, producing a false "nothing flagged" A instead of an honest "can't verify."
+        // `ProductLookupService` already tried an explicit English translation and a
+        // confirmed-English generic field before setting this flag — if it's still true here,
+        // there's real ingredient data Grounded just can't safely read yet, and grading it
+        // blind would be worse than showing no grade at all.
+        if ingredientsUnavailableInEnglish {
+            let note = "This product has an ingredient list in Open Food Facts, but it isn't available in English yet — Grounded won't guess at a translation, so this can't be graded accurately. Try again later once an English ingredient list has been added, or check the label directly."
+            return ProductGradeResult(
+                purityGrade: "—",
+                puritySummary: "Ingredients aren't available in English yet — can't grade this accurately.",
+                purityNotes: [note],
+                nourishmentGrade: "—",
+                nourishmentSummary: "Ingredients aren't available in English yet — can't grade this accurately.",
+                nourishmentNotes: [note]
             )
         }
 
