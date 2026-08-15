@@ -41,7 +41,21 @@ nonisolated struct ProductLookupService {
         let name: String
         let brand: String
         let category: String
+        /// English ingredient text ONLY — empty when English text couldn't be confirmed. See
+        /// `ingredientsUnavailableInEnglish` for why this is empty in that case, distinct from
+        /// a product that genuinely has no ingredient data at all.
         let ingredientsText: String
+        /// True when Open Food Facts has ingredient data for this product, but it's not
+        /// confirmed to be in English — e.g. a product entered by French contributors with no
+        /// English translation yet. Found via a real scan (2026-08-16): Open Food Facts's
+        /// generic `ingredients_text` field mirrors whatever language the product was
+        /// originally entered in, not a normalized English string — a Nutella scan came back
+        /// with French text ("Sucre, Huile de palme, ..."), which every English keyword match
+        /// silently failed against, so the product wrongly graded as clean. Grading blind
+        /// against unconfirmed-language text is worse than showing no grade, so this flag lets
+        /// `ProductGrading` show an honest "can't verify in English yet" state instead of a
+        /// false-clean grade.
+        let ingredientsUnavailableInEnglish: Bool
         let isOrganic: Bool
         /// Raw, lowercased `labels_tags` from the API — v0.2 only ever collapsed this down to
         /// the single `isOrganic` boolean, but v0.3's grading needs to check for several other
@@ -54,7 +68,9 @@ nonisolated struct ProductLookupService {
     /// Both APIs require a descriptive User-Agent instead of an API key. TODO before
     /// launch: swap in a real support address — this placeholder is not monitored.
     private static let userAgent = "Grounded-iOS/0.1 (contact: support@groundedapp.example)"
-    private static let fields = "product_name,brands,categories,ingredients_text,labels_tags"
+    // `ingredients_text_en` and `ingredients_lc` added after a real scan showed the generic
+    // `ingredients_text` field isn't reliably English — see `Result.ingredientsUnavailableInEnglish`.
+    private static let fields = "product_name,brands,categories,ingredients_text,ingredients_text_en,ingredients_lc,labels_tags"
 
     func lookup(barcode: String) async throws -> Result {
         if let food = try? await fetch(host: "world.openfoodfacts.org", barcode: barcode, source: .openFoodFacts) {
@@ -102,6 +118,29 @@ nonisolated struct ProductLookupService {
         }
 
         let labelsTags = (product.labelsTags ?? []).map { $0.lowercased() }
+
+        // Resolve which ingredient text (if any) is confirmed English. Priority: an explicit
+        // English translation (`ingredients_text_en`) if present; else the generic field, but
+        // ONLY if `ingredients_lc` confirms it's actually English; otherwise there's real
+        // ingredient data we just can't safely keyword-match against.
+        let rawIngredients = (product.ingredientsText ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let englishIngredients = (product.ingredientsTextEn ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedIngredientsText: String
+        let unavailableInEnglish: Bool
+        if !englishIngredients.isEmpty {
+            resolvedIngredientsText = englishIngredients
+            unavailableInEnglish = false
+        } else if product.ingredientsLc?.lowercased() == "en" {
+            resolvedIngredientsText = rawIngredients
+            unavailableInEnglish = false
+        } else if !rawIngredients.isEmpty {
+            resolvedIngredientsText = ""
+            unavailableInEnglish = true
+        } else {
+            resolvedIngredientsText = ""
+            unavailableInEnglish = false
+        }
+
         return Result(
             source: source,
             name: name,
@@ -109,7 +148,8 @@ nonisolated struct ProductLookupService {
             // The category list runs general → specific; the last tag is usually the most
             // specific one, which reads better as a single chip than the broadest category.
             category: product.categories?.components(separatedBy: ",").last?.trimmingCharacters(in: .whitespaces) ?? "Uncategorized",
-            ingredientsText: product.ingredientsText ?? "",
+            ingredientsText: resolvedIngredientsText,
+            ingredientsUnavailableInEnglish: unavailableInEnglish,
             isOrganic: labelsTags.contains { $0.contains("organic") },
             labelsTags: labelsTags
         )
@@ -125,6 +165,8 @@ nonisolated struct ProductLookupService {
         let brands: String?
         let categories: String?
         let ingredientsText: String?
+        let ingredientsTextEn: String?
+        let ingredientsLc: String?
         let labelsTags: [String]?
 
         enum CodingKeys: String, CodingKey {
@@ -132,6 +174,8 @@ nonisolated struct ProductLookupService {
             case brands
             case categories
             case ingredientsText = "ingredients_text"
+            case ingredientsTextEn = "ingredients_text_en"
+            case ingredientsLc = "ingredients_lc"
             case labelsTags = "labels_tags"
         }
     }
