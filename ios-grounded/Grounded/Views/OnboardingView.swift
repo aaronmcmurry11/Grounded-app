@@ -105,6 +105,7 @@ struct OnboardingView: View {
                 title: "I agree to health-data collection",
                 detail: "Grounded stores the symptom topics you ask about and the remedies you save, so it can keep your shelf and history. You can view or delete this at any time in Account."
             )
+            .accessibilityIdentifier("onboarding.consentHealth")
 
             Divider().overlay(Theme.hairline)
 
@@ -113,6 +114,7 @@ struct OnboardingView: View {
                 title: "I am 13 years of age or older",
                 detail: "Grounded is not intended for children under 13. This is your own confirmation, not a verification."
             )
+            .accessibilityIdentifier("onboarding.consentAge")
         }
         .padding(22)
         .background {
@@ -132,6 +134,7 @@ struct OnboardingView: View {
                 PrimaryButton(title: "I understand", systemImage: "arrow.right") {
                     step = 1
                 }
+                .accessibilityIdentifier("onboarding.understand")
             } else {
                 PrimaryButton(title: "Get started", systemImage: "arrow.right", isEnabled: consentChecked && ageChecked) {
                     appModel.didConsentToHealthData = consentChecked
@@ -141,6 +144,7 @@ struct OnboardingView: View {
                     appModel.consentRecordedAt = .now
                     appModel.hasCompletedOnboarding = true
                 }
+                .accessibilityIdentifier("onboarding.getStarted")
                 Text(consentChecked && ageChecked
                      ? "You can withdraw consent and delete your data from Account."
                      : "Both confirmations are required to continue.")
