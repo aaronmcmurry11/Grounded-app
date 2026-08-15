@@ -43,6 +43,12 @@ nonisolated struct ProductLookupService {
         let category: String
         let ingredientsText: String
         let isOrganic: Bool
+        /// Raw, lowercased `labels_tags` from the API — v0.2 only ever collapsed this down to
+        /// the single `isOrganic` boolean, but v0.3's grading needs to check for several other
+        /// label values (pasture-raised, grass-fed, grass-finished, free-range, wild-caught),
+        /// so `ProductGrading` now does its own tag matching against the full array instead of
+        /// this service pre-deciding which tags matter.
+        let labelsTags: [String]
     }
 
     /// Both APIs require a descriptive User-Agent instead of an API key. TODO before
@@ -95,6 +101,7 @@ nonisolated struct ProductLookupService {
             throw ProductLookupError.notFound
         }
 
+        let labelsTags = (product.labelsTags ?? []).map { $0.lowercased() }
         return Result(
             source: source,
             name: name,
@@ -103,7 +110,8 @@ nonisolated struct ProductLookupService {
             // specific one, which reads better as a single chip than the broadest category.
             category: product.categories?.components(separatedBy: ",").last?.trimmingCharacters(in: .whitespaces) ?? "Uncategorized",
             ingredientsText: product.ingredientsText ?? "",
-            isOrganic: (product.labelsTags ?? []).contains { $0.lowercased().contains("organic") }
+            isOrganic: labelsTags.contains { $0.contains("organic") },
+            labelsTags: labelsTags
         )
     }
 
