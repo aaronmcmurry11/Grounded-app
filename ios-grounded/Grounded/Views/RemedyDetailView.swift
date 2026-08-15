@@ -39,10 +39,7 @@ struct RemedyDetailView: View {
                         }
                     }
                     section(title: "Dosage & frequency", icon: "clock", glyph: .clock) {
-                        Text(remedy.dosageFrequency)
-                            .bodyText(15)
-                            .foregroundStyle(Theme.cream.opacity(0.86))
-                            .fixedSize(horizontal: false, vertical: true)
+                        DosageText(text: remedy.dosageFrequency)
                     }
                     safetySection
                     sourcesSection
@@ -105,7 +102,7 @@ struct RemedyDetailView: View {
                     text: remedy.ailment,
                     capSize: 34,
                     bodySize: 15,
-                    color: Theme.cream.opacity(0.88)
+                    color: Theme.cream.opacity(0.92)
                 )
             }
             .padding(.top, 2)
@@ -242,7 +239,7 @@ struct RemedyDetailView: View {
                             .padding(.top, 7)
                         Text(item)
                             .bodyText(15)
-                            .foregroundStyle(Theme.cream.opacity(0.88))
+                            .foregroundStyle(Theme.cream.opacity(0.92))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -277,16 +274,7 @@ struct RemedyDetailView: View {
             }
 
             ForEach(Array(remedy.sources.enumerated()), id: \.offset) { index, source in
-                HStack(alignment: .top, spacing: 10) {
-                    Text("\(index + 1)")
-                        .uiLabel(11, weight: 700)
-                        .foregroundStyle(Theme.creamMuted)
-                        .frame(width: 18, height: 18)
-                        .background(Circle().fill(Theme.cream.opacity(0.08)))
-                    Text(source)
-                        .captionText(12)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                SourceCitation(index: index + 1, source: source)
             }
         }
     }
@@ -373,7 +361,7 @@ struct RemedyDetailView: View {
                 .padding(.top, 7)
             Text(text)
                 .bodyText(15)
-                .foregroundStyle(Theme.cream.opacity(0.88))
+                .foregroundStyle(Theme.cream.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -383,7 +371,7 @@ struct RemedyDetailView: View {
             StepNumberRing(number: index)
             Text(text)
                 .bodyText(15)
-                .foregroundStyle(Theme.cream.opacity(0.88))
+                .foregroundStyle(Theme.cream.opacity(0.92))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
