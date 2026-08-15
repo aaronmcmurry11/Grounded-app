@@ -98,7 +98,10 @@ final class BarcodeScanner: NSObject {
         metadataOutput.setMetadataObjectsDelegate(self, queue: .main)
         // Only types the active device actually reports are assignable — setting an
         // unsupported type (common with the simulator's injected camera) throws.
-        let wanted: [AVMetadataObject.ObjectType] = [.ean13, .ean8, .upce, .code39, .code128, .qr]
+        // Deliberately no `.qr`: this scanner is for product barcodes, and a QR code (a
+        // wifi login, a URL, etc.) would just surface as a confusing "couldn't reach the
+        // product database" lookup failure once real lookups were wired in.
+        let wanted: [AVMetadataObject.ObjectType] = [.ean13, .ean8, .upce, .code39, .code128]
         let supported = metadataOutput.availableMetadataObjectTypes
         metadataOutput.metadataObjectTypes = wanted.filter { supported.contains($0) }
 
