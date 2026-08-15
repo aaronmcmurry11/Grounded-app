@@ -1,12 +1,17 @@
 import AVFoundation
 import SwiftUI
 
-/// Camera-based product scanner. Camera + scan flow only — ingredient grading is
-/// designed later, so the result screen shows a clearly-labelled sample read-out.
+/// Camera-based product scanner. A detected or manually entered code is looked up against
+/// Open Food Facts / Open Beauty Facts and graded by `ProductGrading` — see
+/// `ProductLookupService` for the lookup and `ScanNotFoundView` for the not-found path.
 struct ScannerView: View {
     @State private var scanner = BarcodeScanner()
     @State private var scannedProduct: ScannedProduct?
+    @State private var notFoundBarcode: String?
+    @State private var isLookingUp = false
+    @State private var lookupErrorMessage: String?
     @State private var isEnteringCode = false
+    private let lookupService = ProductLookupService()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -55,6 +60,10 @@ struct ScannerView: View {
                         SkeletonBar(width: 96, height: 14)
                     }
                 }
+
+                if isLookingUp {
+                    lookupOverlay
+                }
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 18)
@@ -69,18 +78,94 @@ struct ScannerView: View {
         .onDisappear { scanner.stop() }
         .onChange(of: scanner.lastScannedCode) { _, code in
             guard let code else { return }
-            scannedProduct = ScannedProduct.sample(barcode: code)
+            lookUp(barcode: code)
         }
-        .sheet(item: $scannedProduct) { product in
+        // `onDismiss` (not the button closures) is what re-arms scanning — it fires on every
+        // dismissal path, including a swipe-down, whereas the closures below only fire when
+        // the user taps a button inside the sheet. Relying on the closures alone left the
+        // scanner stuck any time someone swiped a result away instead of tapping a button.
+        .sheet(item: $scannedProduct, onDismiss: { scanner.resumeScanning() }) { product in
             ScanResultView(product: product) {
                 scannedProduct = nil
-                scanner.resumeScanning()
+            }
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { notFoundBarcode != nil },
+                set: { if !$0 { notFoundBarcode = nil } }
+            ),
+            onDismiss: { scanner.resumeScanning() }
+        ) {
+            ScanNotFoundView(barcode: notFoundBarcode ?? "") {
+                notFoundBarcode = nil
             }
         }
         .sheet(isPresented: $isEnteringCode) {
             ManualCodeSheet { code in
                 isEnteringCode = false
-                scannedProduct = ScannedProduct.sample(barcode: code)
+                lookUp(barcode: code)
+            }
+        }
+        .alert(
+            "Couldn't look that up",
+            isPresented: Binding(
+                get: { lookupErrorMessage != nil },
+                set: { if !$0 { lookupErrorMessage = nil } }
+            )
+        ) {
+            Button("OK") {
+                lookupErrorMessage = nil
+                scanner.resumeScanning()
+            }
+        } message: {
+            Text(lookupErrorMessage ?? "")
+        }
+    }
+
+    private var lookupOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.45)
+            VStack(spacing: 10) {
+                ProgressView()
+                    .tint(Theme.cream)
+                Text("Looking up product…")
+                    .captionText(13, color: Theme.cream)
+            }
+        }
+        .clipShape(.rect(cornerRadius: Theme.radiusLarge, style: .continuous))
+    }
+
+    /// Looks the code up and routes to the found, not-found, or network-error outcome.
+    /// The scanner naturally stops delivering new codes once one is detected (its metadata
+    /// delegate clears itself), so no explicit pause is needed here — only `resumeScanning()`
+    /// on the way back out, from whichever outcome the user dismisses.
+    private func lookUp(barcode: String) {
+        guard !isLookingUp else { return }
+        isLookingUp = true
+        // A manually-entered code always wins if a camera lookup's sheet is still pending —
+        // closing it here means at most one sheet is ever driven at a time, so the two
+        // independently-presented sheets (found vs. not-found) can't both try to appear.
+        isEnteringCode = false
+        Task {
+            defer { isLookingUp = false }
+            do {
+                let result = try await lookupService.lookup(barcode: barcode)
+                let graded = ProductGrading.grade(ingredientsText: result.ingredientsText, isOrganic: result.isOrganic)
+                scannedProduct = ScannedProduct(
+                    barcode: barcode,
+                    name: result.name,
+                    brand: result.brand,
+                    category: result.category,
+                    sourceLabel: result.source.rawValue,
+                    sourceURL: result.source.attributionURL,
+                    grade: graded.grade,
+                    gradeSummary: graded.summary,
+                    notedIngredients: graded.notedIngredients
+                )
+            } catch ProductLookupError.notFound {
+                notFoundBarcode = barcode
+            } catch {
+                lookupErrorMessage = "We couldn't reach the product database. Check your connection and try again."
             }
         }
     }
@@ -101,7 +186,7 @@ struct ScannerView: View {
 
     private var footer: some View {
         VStack(spacing: 10) {
-            Text("Ingredient grading is still in design. Scans return a sample read-out for now — treat it as illustrative, not a verdict on any product.")
+            Text("Grounded looks products up against open product databases and grades what's on the label — this is educational, not a medical or safety verdict.")
                 .captionText(12, italic: true)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -109,6 +194,8 @@ struct ScannerView: View {
             QuietButton(title: "Enter a code manually", systemImage: "keyboard") {
                 isEnteringCode = true
             }
+            .disabled(isLookingUp)
+            .opacity(isLookingUp ? 0.5 : 1)
         }
         .padding(.horizontal, 24)
         .padding(.top, 20)
