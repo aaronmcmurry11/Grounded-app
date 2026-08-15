@@ -118,3 +118,86 @@ jobs:
         with:
           name: grounded-app-screenshot
           path: ios-grounded/screenshot.png
+
+  barcode-scan-test:
+    # Runs the barcode scanner's manual-entry path against the REAL Open Food Facts API.
+    # This exists because the sandbox this feature was built in has no network access to
+    # openfoodfacts.org, so ProductLookupService/ProductGrading were written blind from
+    # documented API shape and never exercised against a live response. GitHub's macOS
+    # runners have normal internet access, so this is the actual, automated proof that the
+    # lookup + grading pipeline works end to end — without needing a physical device,
+    # TestFlight, or an Apple Developer account. See BarcodeScanUITests.swift for the test
+    # itself and why the manual-entry path (not the camera) is used.
+    needs: build
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios-grounded
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
+
+      - name: Find an available iPhone simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; data=json.load(sys.stdin); \
+              devices=[d for runtime in data['devices'].values() for d in runtime if 'iPhone' in d['name']]; \
+              print(devices[0]['udid'] if devices else '')")
+          if [ -z "$UDID" ]; then
+            echo "No iPhone simulator found" >&2
+            exit 1
+          fi
+          echo "Using simulator: $UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Boot the simulator
+        run: xcrun simctl boot "${{ steps.sim.outputs.udid }}" || true
+
+      - name: Run the barcode scan UI test (real network call)
+        # Not wrapped in the usual xcpretty-with-fallback pattern used elsewhere in this
+        # file: that pattern re-runs the whole command on failure, which would collide with
+        # -resultBundlePath already having been created by the first attempt. Piped through
+        # `tee` instead of straight into xcpretty so the real xcodebuild exit code (not
+        # xcpretty's) decides pass/fail, and the raw log survives as a fallback artifact if
+        # xcpretty ever mis-parses the output.
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:GroundedUITests/BarcodeScanUITests/testManualBarcodeLookupAgainstRealAPI \
+            -resultBundlePath "$PWD/barcode-scan-test.xcresult" \
+            | tee "$PWD/barcode-scan-test-raw.log" | xcpretty
+          exit "${PIPESTATUS[0]}"
+
+      - name: Export the result screenshot
+        # Runs even if the test above failed — a failed run's screenshot is exactly what's
+        # needed to see what actually went wrong (stuck on loading, wrong screen, etc).
+        #
+        # xcresulttool's exact flags have shifted across Xcode versions, so this is unverified
+        # against a live run as of writing. If the uploaded artifact's barcode-scan-attachments
+        # folder comes out empty, check `xcrun xcresulttool export attachments --help` on the
+        # runner (Xcode 26.3) for the current syntax — the fallback below at least confirms
+        # whether this step is the problem, rather than failing silently.
+        if: always()
+        run: |
+          xcrun xcresulttool export attachments \
+            --path "$PWD/barcode-scan-test.xcresult" \
+            --output-path "$PWD/barcode-scan-attachments" \
+            || echo "xcresulttool export failed or used different syntax — check barcode-scan-test-raw.log and the .xcresult bundle directly instead."
+          echo "--- attachments exported ---"
+          ls -la "$PWD/barcode-scan-attachments" 2>/dev/null || echo "(no attachments directory was created)"
+
+      - name: Upload barcode scan test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: grounded-barcode-scan-test
+          path: |
+            ios-grounded/barcode-scan-attachments
+            ios-grounded/barcode-scan-test.xcresult
+            ios-grounded/barcode-scan-test-raw.log
