@@ -153,6 +153,7 @@ struct ScannerView: View {
                 let graded = ProductGrading.grade(
                     productName: result.name,
                     ingredientsText: result.ingredientsText,
+                    ingredientsUnavailableInEnglish: result.ingredientsUnavailableInEnglish,
                     isOrganic: result.isOrganic,
                     labelsTags: result.labelsTags
                 )
