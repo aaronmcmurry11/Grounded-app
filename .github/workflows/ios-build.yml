@@ -178,11 +178,12 @@ jobs:
         # Runs even if the test above failed — a failed run's screenshot is exactly what's
         # needed to see what actually went wrong (stuck on loading, wrong screen, etc).
         #
-        # xcresulttool's exact flags have shifted across Xcode versions, so this is unverified
-        # against a live run as of writing. If the uploaded artifact's barcode-scan-attachments
-        # folder comes out empty, check `xcrun xcresulttool export attachments --help` on the
-        # runner (Xcode 26.3) for the current syntax — the fallback below at least confirms
-        # whether this step is the problem, rather than failing silently.
+        # xcresulttool export's exact flags have shifted across Xcode versions, so this is
+        # unverified against a live run as of writing. If the uploaded artifact's
+        # barcode-scan-attachments folder comes out empty, check
+        # `xcrun xcresulttool export attachments --help` on the runner (Xcode 26.3) for the
+        # current syntax — the fallback below at least confirms whether this step is the
+        # problem, rather than failing silently.
         if: always()
         run: |
           xcrun xcresulttool export attachments \
@@ -201,3 +202,108 @@ jobs:
             ios-grounded/barcode-scan-attachments
             ios-grounded/barcode-scan-test.xcresult
             ios-grounded/barcode-scan-test-raw.log
+
+  appetize-upload:
+    # Uploads the simulator build to Appetize.io so Aaron can interact with the real app in
+    # a browser tab — full navigation, tapping, typing — without a Mac, an Apple Developer
+    # account, or TestFlight. The barcode scanner's actual camera won't work through a
+    # browser-simulated device; everything else (chat, Apothecary, onboarding, account,
+    # manual barcode entry) will.
+    #
+    # Builds its own copy of Grounded.app rather than reusing the build/screenshot jobs' —
+    # GitHub Actions jobs run on separate runners with separate filesystems, so nothing
+    # carries over between jobs without an explicit upload-artifact/download-artifact pair.
+    # Matches the same rebuild-per-job pattern the screenshot and barcode-scan-test jobs
+    # above already use.
+    #
+    # Requires a repo secret named APPETIZE_API_TOKEN (Settings → Secrets and variables →
+    # Actions) — an Appetize API token with the "Developer" role.
+    #
+    # First run: no APPETIZE_APP_PUBLIC_KEY secret exists yet, so this CREATES a new app on
+    # Appetize and prints its link (and the publicKey to save) in the job summary — click
+    # into the finished "appetize-upload" job on the Actions run page to see it. Add that
+    # publicKey as a new repo secret named APPETIZE_APP_PUBLIC_KEY, and every run after that
+    # will UPDATE the same app in place instead of creating a new one — so the link stays
+    # the same forever rather than changing on every push.
+    needs: build
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios-grounded
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
+
+      - name: Build for Simulator (no code signing)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty || xcodebuild build \
+            -project Grounded.xcodeproj \
+            -scheme Grounded \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Zip the .app bundle for upload
+        # ditto (not plain zip) preserves the app bundle's internal symlinks correctly —
+        # Apple's own recommended way to archive a .app for redistribution.
+        run: |
+          APP_PATH=$(find build -name "Grounded.app" -path "*iphonesimulator*" | head -1)
+          echo "App path: $APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" grounded.zip
+
+      - name: Upload to Appetize (create new app, or update the existing one)
+        env:
+          APPETIZE_API_TOKEN: ${{ secrets.APPETIZE_API_TOKEN }}
+          APPETIZE_APP_PUBLIC_KEY: ${{ secrets.APPETIZE_APP_PUBLIC_KEY }}
+        run: |
+          if [ -n "$APPETIZE_APP_PUBLIC_KEY" ]; then
+            echo "Updating existing Appetize app $APPETIZE_APP_PUBLIC_KEY"
+            REQUEST_URL="https://api.appetize.io/v1/apps/$APPETIZE_APP_PUBLIC_KEY"
+          else
+            echo "No APPETIZE_APP_PUBLIC_KEY secret found yet — creating a new Appetize app for the first time"
+            REQUEST_URL="https://api.appetize.io/v1/apps"
+          fi
+
+          curl -sS -X POST "$REQUEST_URL" \
+            -H "X-API-KEY: $APPETIZE_API_TOKEN" \
+            -F "platform=ios" \
+            -F "note=Grounded - commit ${{ github.sha }}" \
+            -F "file=@grounded.zip" \
+            -o response.json
+
+          cat response.json
+
+          PUBLIC_KEY=$(python3 -c "import json; print(json.load(open('response.json')).get('publicKey', ''))")
+          if [ -z "$PUBLIC_KEY" ]; then
+            echo "Appetize did not return a publicKey - check the response printed above for an error." >&2
+            exit 1
+          fi
+
+          {
+            echo "## Try Grounded live in your browser"
+            echo ""
+            echo "https://appetize.io/app/$PUBLIC_KEY"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -z "$APPETIZE_APP_PUBLIC_KEY" ]; then
+            {
+              echo "**First run — save this as a new repo secret named APPETIZE_APP_PUBLIC_KEY:**"
+              echo ""
+              echo "\`$PUBLIC_KEY\`"
+              echo ""
+              echo "Settings -> Secrets and variables -> Actions -> New repository secret."
+              echo "Every run after that updates this same app instead of creating a new one, so the link above stays valid forever."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
