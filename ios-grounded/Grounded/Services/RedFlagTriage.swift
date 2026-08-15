@@ -56,7 +56,7 @@ enum RedFlagTriage {
         if matchesAny(text, mentalHealthPlanIntentPatterns) { return mentalHealthPlanIntentResult }
 
         if matchesAny(text, opioidOverdosePatterns) { return opioidOverdoseResult }
-        if matchesAny(text, poisoningEmergencyPatterns) { return poisoningEmergencyResult }
+        if isPoisoningEmergency(text) { return poisoningEmergencyResult }
         if matchesAny(text, anaphylaxisPatterns) { return anaphylaxisResult }
         if matchesAny(text, strokePatterns) { return strokeResult }
         if matchesAny(text, cardiacPatterns) { return cardiacResult }
@@ -162,11 +162,22 @@ enum RedFlagTriage {
     /// Source: Mass. Dept. of Public Health, "When to Call the Poison Control Center, and
     /// When to Call 911." Split into two tiers on purpose — a conscious, breathing person
     /// who may have gotten into something needs Poison Control, not a 911 dispatch.
-    private static let poisoningEmergencyPatterns = [
-        "swallowed something and stopped breathing", "swallowed something and had a seizure",
-        "swallowed something and passed out", "ate something and collapsed",
-        "drank something and cant be woken", "poisoned and unconscious", "poisoned and not breathing",
+    ///
+    /// This is a co-occurrence check (an ingestion word + a collapse symptom, anywhere in
+    /// the message) rather than a fixed phrase list — an earlier version only recognized
+    /// "swallowed something and stopped breathing" verbatim and missed the equally common
+    /// "swallowed pills and stopped breathing" / "took pills and passed out" phrasing.
+    /// Caught in adversarial testing; a fixed-phrase list keeps needing every noun (pills,
+    /// medication, chemical, cleaner...) spelled out, which is exactly the kind of gap a
+    /// safety net can't afford.
+    private static let poisoningIngestionWords = ["swallowed", "took", "ate", "drank", "ingested"]
+    private static let poisoningSevereSymptoms = [
+        "stopped breathing", "had a seizure", "passed out", "collapsed",
+        "cant be woken", "cant wake", "unconscious", "not breathing", "unresponsive",
     ]
+    private static func isPoisoningEmergency(_ text: String) -> Bool {
+        matchesAny(text, poisoningIngestionWords) && matchesAny(text, poisoningSevereSymptoms)
+    }
     private static let poisoningEmergencyResult = TriageResult(
         tier: .emergency911,
         title: "This is a poisoning emergency",
@@ -178,6 +189,8 @@ enum RedFlagTriage {
         "child swallowed a pill", "swallowed a household chemical", "ate a plant i dont recognize",
         "took too much of a supplement", "accidentally took double dose",
         "swallowed cleaning product", "got into the medicine cabinet", "swallowed a battery",
+        "ate my vitamins", "ate some vitamins", "ate a vitamin", "ate a few vitamins",
+        "of my vitamins", "took too many vitamins", "swallowed a vitamin",
     ]
     private static let poisoningNonEmergencyResult = TriageResult(
         tier: .poisonControl,
@@ -226,6 +239,7 @@ enum RedFlagTriage {
     /// fatigue, or upset stomach with little or no classic chest pain.
     private static let cardiacPatterns = [
         "chest pain", "chest pressure", "chest squeezing", "squeezing in my chest", "chest feels tight",
+        "chest tightness",
         "chest fullness", "crushing chest", "chest pain spreading", "pain spreading to my arm",
         "pain spreading to my jaw", "pain radiating to my arm", "pain radiating to my jaw",
         "pain radiating to my back", "pain in my jaw and chest", "cold sweat and chest pain",
@@ -277,7 +291,8 @@ enum RedFlagTriage {
 
     /// Source: American Red Cross, "Bleeding (Life-Threatening External)."
     private static let bleedingPatterns = [
-        "wont stop bleeding", "bleeding wont stop", "bleeding is spurting", "blood is spurting",
+        "wont stop bleeding", "bleeding wont stop", "cant stop the bleeding", "cant stop bleeding",
+        "wont stop the bleeding", "bleeding is spurting", "blood is spurting", "its spurting blood",
         "bleeding and feels faint", "bleeding and looks pale", "vomiting blood", "throwing up blood",
         "blood in my stool", "blood in stool", "bleeding through the bandage",
         "lost a lot of blood",
