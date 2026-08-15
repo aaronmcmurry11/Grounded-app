@@ -32,6 +32,7 @@ final class AppModel {
         static let channels = "grounded.updates.channels"
         static let updatesOpenedAt = "grounded.updates.lastOpenedAt"
         static let reports = "grounded.reports.issues"
+        static let productSubmissions = "grounded.reports.productSubmissions"
         static let startHereDismissed = "grounded.apothecary.startHereDismissed"
     }
 
@@ -108,6 +109,12 @@ final class AppModel {
         didSet { persist(issueReports, forKey: Key.reports) }
     }
 
+    /// "We couldn't find this product" submissions from the barcode scanner's not-found
+    /// state. Same on-device-only storage as `issueReports` — no backend to send to yet.
+    private(set) var productSubmissions: [ProductSubmission] {
+        didSet { persist(productSubmissions, forKey: Key.productSubmissions) }
+    }
+
     init() {
         hasCompletedOnboarding = defaults.bool(forKey: Key.onboarded)
         didConsentToHealthData = defaults.bool(forKey: Key.consented)
@@ -125,6 +132,12 @@ final class AppModel {
             issueReports = decoded
         } else {
             issueReports = []
+        }
+        if let data = defaults.data(forKey: Key.productSubmissions),
+           let decoded = try? JSONDecoder().decode([ProductSubmission].self, from: data) {
+            productSubmissions = decoded
+        } else {
+            productSubmissions = []
         }
         if let data = defaults.data(forKey: Key.health),
            let items = try? JSONDecoder().decode([StoredHealthItem].self, from: data) {
@@ -186,6 +199,18 @@ final class AppModel {
                 remedyID: remedyID,
                 remedyName: remedyName,
                 reason: reason,
+                note: String(note.trimmingCharacters(in: .whitespacesAndNewlines).prefix(1_000))
+            )
+        )
+    }
+
+    // MARK: Product submissions
+
+    func submitProductSubmission(barcode: String, productName: String, note: String) {
+        productSubmissions.append(
+            ProductSubmission(
+                barcode: barcode,
+                productName: String(productName.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200)),
                 note: String(note.trimmingCharacters(in: .whitespacesAndNewlines).prefix(1_000))
             )
         )
