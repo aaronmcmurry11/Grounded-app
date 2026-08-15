@@ -1,32 +1,20 @@
 import SwiftUI
 
+/// A real, looked-up product: identity from Open Food Facts/Open Beauty Facts, graded by
+/// `ProductGrading` against Grounded's own criteria. See `ProductLookupService` and
+/// `ProductGrading` for how each half is built, and `claude/barcode-grading-rubric.md` in
+/// the project docs for the grading rubric's sourcing.
 nonisolated struct ScannedProduct: Identifiable, Hashable {
     let id = UUID()
     let barcode: String
     let name: String
     let brand: String
     let category: String
-    /// Placeholder grade. Real grading logic is designed in a later phase.
+    let sourceLabel: String
+    let sourceURL: String
     let grade: String
     let gradeSummary: String
     let notedIngredients: [String]
-
-    static func sample(barcode: String) -> ScannedProduct {
-        ScannedProduct(
-            barcode: barcode,
-            name: "Oat & Chamomile Body Cream",
-            brand: "Sample Brand",
-            category: "Cosmetics",
-            grade: "B",
-            gradeSummary: "Mostly simple ingredients, with one fragrance blend that isn't fully disclosed on the label.",
-            notedIngredients: [
-                "Colloidal oatmeal — commonly used to soothe dry, itchy skin",
-                "Chamomile flower extract — traditionally used on irritated skin",
-                "Parfum / fragrance — undisclosed blend, a common contact-irritant source",
-                "Phenoxyethanol — preservative, widely permitted at low concentrations",
-            ]
-        )
-    }
 }
 
 struct ScanResultView: View {
@@ -45,7 +33,7 @@ struct ScanResultView: View {
 
                     VStack(spacing: 12) {
                         PrimaryButton(title: "Scan another", systemImage: "barcode.viewfinder", action: onScanAgain)
-                        Text("Grades are illustrative while the ingredient-grading system is being designed. Nothing here is a health or safety judgement about a product.")
+                        Text("Grades are Grounded's own read on the label against our current criteria — not a medical, safety, or regulatory judgement about this product.")
                             .captionText(12, color: Theme.creamFaint)
                             .multilineTextAlignment(.center)
                     }
@@ -129,21 +117,38 @@ struct ScanResultView: View {
     }
 
     private var metaCard: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Barcode")
-                    .sectionEyebrow(12)
-                Text(product.barcode)
-                    .bodyText(15)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Barcode")
+                        .sectionEyebrow(12)
+                    Text(product.barcode)
+                        .bodyText(15)
+                        .foregroundStyle(Theme.cream)
+                }
+                Spacer()
+                Text(product.category)
+                    .uiLabel(13)
                     .foregroundStyle(Theme.cream)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background { Capsule().fill(Theme.cream.opacity(0.08)) }
             }
-            Spacer()
-            Text(product.category)
-                .uiLabel(13)
-                .foregroundStyle(Theme.cream)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 7)
-                .background { Capsule().fill(Theme.cream.opacity(0.08)) }
+
+            Divider()
+                .overlay(Theme.hairline)
+
+            // Attribution required by Open Food Facts / Open Beauty Facts' license terms
+            // (ODbL / CC-BY-SA) — kept on the result itself, not tucked into an About page.
+            Link(destination: URL(string: product.sourceURL) ?? URL(string: "https://openfoodfacts.org")!) {
+                HStack(spacing: 6) {
+                    Text("Product data from \(product.sourceLabel)")
+                        .captionText(12, color: Theme.creamFaint)
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(Theme.creamFaint)
+                }
+            }
         }
         .padding(18)
         .background {
