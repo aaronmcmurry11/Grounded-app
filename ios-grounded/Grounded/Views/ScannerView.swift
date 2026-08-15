@@ -150,7 +150,12 @@ struct ScannerView: View {
             defer { isLookingUp = false }
             do {
                 let result = try await lookupService.lookup(barcode: barcode)
-                let graded = ProductGrading.grade(ingredientsText: result.ingredientsText, isOrganic: result.isOrganic)
+                let graded = ProductGrading.grade(
+                    productName: result.name,
+                    ingredientsText: result.ingredientsText,
+                    isOrganic: result.isOrganic,
+                    labelsTags: result.labelsTags
+                )
                 scannedProduct = ScannedProduct(
                     barcode: barcode,
                     name: result.name,
@@ -158,9 +163,12 @@ struct ScannerView: View {
                     category: result.category,
                     sourceLabel: result.source.rawValue,
                     sourceURL: result.source.attributionURL,
-                    grade: graded.grade,
-                    gradeSummary: graded.summary,
-                    notedIngredients: graded.notedIngredients
+                    purityGrade: graded.purityGrade,
+                    puritySummary: graded.puritySummary,
+                    purityNotes: graded.purityNotes,
+                    nourishmentGrade: graded.nourishmentGrade,
+                    nourishmentSummary: graded.nourishmentSummary,
+                    nourishmentNotes: graded.nourishmentNotes
                 )
             } catch ProductLookupError.notFound {
                 notFoundBarcode = barcode
