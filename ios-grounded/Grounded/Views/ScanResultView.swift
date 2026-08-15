@@ -2,8 +2,12 @@ import SwiftUI
 
 /// A real, looked-up product: identity from Open Food Facts/Open Beauty Facts, graded by
 /// `ProductGrading` against Grounded's own criteria. See `ProductLookupService` and
-/// `ProductGrading` for how each half is built, and `claude/barcode-grading-rubric.md` in
-/// the project docs for the grading rubric's sourcing.
+/// `ProductGrading` for how each half is built, and `claude/barcode-grading-v0.3-spec.md` /
+/// `claude/barcode-grading-rubric.md` in the project docs for the grading rubric's sourcing.
+///
+/// v0.3: two independent grades instead of one — `purity` (avoids what Grounded flags) and
+/// `nourishment` (actually looks like real, ancestral, nutrient-dense food). A product can be
+/// clean on one and empty on the other; showing both honestly is the whole point of the split.
 nonisolated struct ScannedProduct: Identifiable, Hashable {
     let id = UUID()
     let barcode: String
@@ -12,9 +16,12 @@ nonisolated struct ScannedProduct: Identifiable, Hashable {
     let category: String
     let sourceLabel: String
     let sourceURL: String
-    let grade: String
-    let gradeSummary: String
-    let notedIngredients: [String]
+    let purityGrade: String
+    let puritySummary: String
+    let purityNotes: [String]
+    let nourishmentGrade: String
+    let nourishmentSummary: String
+    let nourishmentNotes: [String]
 }
 
 struct ScanResultView: View {
@@ -28,7 +35,8 @@ struct ScanResultView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     gradeCard
-                    ingredientsCard
+                    notesCard(title: "Purity — what's on the label", notes: product.purityNotes)
+                    notesCard(title: "Nourishment — Grounded's ancestral lens", notes: product.nourishmentNotes)
                     metaCard
 
                     VStack(spacing: 12) {
@@ -49,22 +57,7 @@ struct ScanResultView: View {
     }
 
     private var gradeCard: some View {
-        HStack(alignment: .top, spacing: 18) {
-            VStack(spacing: 2) {
-                // A single display glyph rather than running text, so it sits above the
-                // hero band's 42pt ceiling on purpose.
-                Text(product.grade)
-                    .heroDisplay(48)
-                    .foregroundStyle(Theme.onCream)
-                Text("Grade")
-                    .sectionEyebrow(12, color: Theme.onCream.opacity(0.7))
-            }
-            .frame(width: 84, height: 96)
-            .background {
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Theme.cream)
-            }
-
+        VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(product.brand)
                     .sectionEyebrow(12)
@@ -73,10 +66,11 @@ struct ScanResultView: View {
                     .foregroundStyle(Theme.cream)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("scanResult.productName")
-                Text(product.gradeSummary)
-                    .bodyText(15)
-                    .foregroundStyle(Theme.cream.opacity(0.85))
-                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(alignment: .top, spacing: 14) {
+                gradeBadge(label: "Purity", grade: product.purityGrade, summary: product.puritySummary)
+                gradeBadge(label: "Nourishment", grade: product.nourishmentGrade, summary: product.nourishmentSummary)
             }
         }
         .padding(18)
@@ -88,11 +82,37 @@ struct ScanResultView: View {
         .ambientElevation(.raised)
     }
 
-    private var ingredientsCard: some View {
+    private func gradeBadge(label: String, grade: String, summary: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            VStack(spacing: 2) {
+                // A single display glyph rather than running text, so it sits above the
+                // hero band's 42pt ceiling on purpose.
+                Text(grade)
+                    .heroDisplay(34)
+                    .foregroundStyle(Theme.onCream)
+                Text(label)
+                    .sectionEyebrow(11, color: Theme.onCream.opacity(0.7))
+            }
+            .frame(maxWidth: .infinity, minHeight: 72)
+            .background {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Theme.cream)
+            }
+
+            Text(summary)
+                .bodyText(13)
+                .foregroundStyle(Theme.cream.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier(label == "Purity" ? "scanResult.purityGrade" : "scanResult.nourishmentGrade")
+    }
+
+    private func notesCard(title: String, notes: [String]) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("What's on the label")
+            Text(title)
                 .sectionEyebrow()
-            ForEach(product.notedIngredients, id: \.self) { line in
+            ForEach(notes, id: \.self) { line in
                 HStack(alignment: .top, spacing: 10) {
                     Circle()
                         .fill(Theme.creamFaint)
