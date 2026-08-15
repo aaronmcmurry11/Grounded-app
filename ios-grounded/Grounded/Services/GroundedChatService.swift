@@ -31,7 +31,7 @@ nonisolated struct GroundedChatService {
         to history: [ChatMessage],
         catalog: [Remedy]
     ) async throws -> ChatTurn {
-        let base = Config.backendBaseURL.trimmingCharacters(in: .whitespaces)
+        let base = Config.EXPO_PUBLIC_RORK_FUNCTIONS_URL.trimmingCharacters(in: .whitespaces)
         guard !base.isEmpty, let url = URL(string: "\(base)/chat") else {
             throw ProxyError.notConfigured
         }
@@ -62,7 +62,7 @@ nonisolated struct GroundedChatService {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(Config.appSharedKey, forHTTPHeaderField: "X-App-Key")
+        request.setValue(Config.EXPO_PUBLIC_RORK_APP_KEY, forHTTPHeaderField: "X-App-Key")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         request.timeoutInterval = 60
 
